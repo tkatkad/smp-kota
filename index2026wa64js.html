@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kalkulator SPMB 2026 - Kota Yogyakarta</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+      background: #f0fff4;
+      color: #111;
+      padding: 1rem;
+      margin: 0 auto;
+      max-width: 520px;
+    }
+    h1, h2, h3 { text-align: center; color: #155724; margin: 0.5rem 0; }
+    h1 { font-size: 1.4rem; }
+    h2 { font-size: 1.2rem; }
+    
+    .year-toggle {
+      text-align: center;
+      margin: 1rem 0;
+      padding: 0.75rem;
+      background: #d4edda;
+      border-radius: 8px;
+      border: 1px solid #c3e6cb;
+    }
+    .year-toggle label {
+      margin: 0 0.75rem;
+      font-weight: normal;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .year-toggle input[type="radio"] {
+      transform: scale(1.2);
+      cursor: pointer;
+    }
+    .badge {
+      display: inline-block;
+      padding: 0.15rem 0.4rem;
+      background: #28a745;
+      color: white;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: bold;
+    }
+    
+    label {
+      display: block;
+      margin-top: 1rem;
+      font-weight: bold;
+      color: #155724;
+    }
+    .section-label {
+      margin-top: 1.5rem;
+      margin-bottom: 0.5rem;
+      font-size: 1.1rem;
+      border-bottom: 2px solid #28a745;
+      padding-bottom: 0.3rem;
+    }
+    
+    input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      font-size: 18px;
+      margin-top: 0.25rem;
+      border: 2px solid #ccc;
+      border-radius: 6px;
+      background-color: #fff;
+      text-align: center;
+    }
+    input[type="number"]:focus {
+      border-color: #28a745;
+      background-color: #eaffea;
+      outline: none;
+    }
+    input[type="number"].error {
+      border-color: #dc3545;
+      animation: shake 0.3s;
+    }
+    input[type="number"].required-empty {
+      border-color: #dc3545;
+      background-color: #fff5f5;
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+    
+    .semester-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    .semester-item {
+      text-align: center;
+    }
+    .semester-item label {
+      font-size: 11px;
+      font-weight: normal;
+      color: #555;
+      margin: 0;
+      display: block;
+    }
+    .semester-item input {
+      font-size: 14px;
+      padding: 6px 2px;
+      width: 100%;
+    }
+    
+    .subject-card {
+      background: #fff;
+      padding: 0.75rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      border-left: 4px solid #28a745;
+    }
+    .subject-title {
+      font-weight: bold;
+      color: #155724;
+      margin-bottom: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .subject-avg {
+      font-size: 13px;
+      color: #666;
+      background: #f8f9fa;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+    }
+    
+    .section {
+      background: #fff;
+      padding: 1rem;
+      border-radius: 10px;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .result {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      font-size: 18px;
+      border-radius: 10px;
+      background-color: #e6f9ec;
+      border: 2px solid #28a745;
+    }
+    .result strong { color: #155724; }
+    .result .final {
+      font-size: 1.3rem;
+      color: #155724;
+      display: block;
+      margin-top: 0.5rem;
+      padding-top: 0.5rem;
+      border-top: 2px dashed #28a745;
+    }
+    .result .error-msg {
+      color: #dc3545;
+      font-weight: bold;
+      padding: 0.5rem;
+      background: #fff5f5;
+      border-radius: 6px;
+      border-left: 4px solid #dc3545;
+    }
+    
+    .formula-box {
+      font-size: 13px;
+      color: #555;
+      background: #f8f9fa;
+      padding: 0.75rem;
+      border-radius: 6px;
+      margin: 1rem 0;
+      border-left: 4px solid #17a2b8;
+      line-height: 1.4;
+    }
+    
+    button {
+      font-size: 18px;
+      padding: 12px 20px;
+      margin-top: 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+      background: #28a745;
+      color: white;
+      font-weight: bold;
+      transition: background 0.2s ease;
+    }
+    button:hover { background-color: #218838; }
+    button:active { transform: scale(0.99); }
+    button.secondary {
+      background-color: #e0e0e0;
+      color: #333;
+      font-weight: normal;
+    }
+    button.secondary:hover { background-color: #ccc; }
+    
+    /* Share & Copy Section */
+    .share-section {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+      border-radius: 10px;
+      color: white;
+      box-shadow: 0 4px 6px rgba(37, 211, 102, 0.3);
+    }
+    .share-section h3 { color: white; margin-top: 0; font-size: 1.1rem; }
+    .share-buttons { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.75rem; }
+    
+    .share-btn, .copy-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 12px;
+      border: 2px solid white;
+      background: white;
+      color: #25D366;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 16px;
+      text-decoration: none;
+      width: 100%;
+    }
+    .share-btn:hover, .copy-btn:hover {
+      background: #f0fff4;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    .share-btn.secondary {
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border-color: rgba(255,255,255,0.5);
+    }
+    .share-btn.secondary:hover { background: rgba(255,255,255,0.3); }
+    .copy-btn {
+      background: #17a2b8;
+      color: white;
+      border-color: #138496;
+    }
+    .copy-btn:hover { background: #138496; }
+    .copy-btn.copied {
+      background: #28a745;
+      border-color: #218838;
+    }
+    
+    .share-icon { font-size: 20px; }
+    .share-hint { font-size: 12px; text-align: center; margin-top: 0.5rem; opacity: 0.9; }
+    
+    .short-url-display {
+      margin-top: 0.75rem;
+      padding: 0.5rem;
+      background: rgba(255,255,255,0.15);
+      border-radius: 6px;
+      font-size: 11px;
+      word-break: break-all;
+      display: none;
+    }
+    .short-url-display.show { display: block; }
+    
+    .flash { animation: flashHighlight 1s ease-in-out; }
+    @keyframes flashHighlight {
+      0% { background-color: #fff3cd; }
+      50% { background-color: #ffeeba; }
+      100% { background-color: #e6f9ec; }
+    }
+    
+    .hidden { display: none; }
+    .helper-text { font-size: 12px; color: #666; margin-top: 0.25rem; display: block; }
+    .required-hint { font-size: 11px; color: #dc3545; margin-top: 0.2rem; display: none; }
+    .required-hint.show { display: block; }
+    
+    .toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #155724;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: bold;
+      z-index: 9999;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      animation: slideDown 0.3s ease;
+    }
+    @keyframes slideDown { from { top: -50px; opacity: 0; } to { top: 20px; opacity: 1; } }
+    @keyframes slideUp { from { top: 20px; opacity: 1; } to { top: -50px; opacity: 0; } }
+    
+    .max-hint { font-size: 11px; color: #999; text-align: right; margin-top: 0.2rem; }
+    
+    @media (max-width: 400px) {
+      .semester-grid { grid-template-columns: repeat(5, 1fr); gap: 0.3rem; }
+      .semester-item input { font-size: 12px; padding: 5px 1px; }
+      .semester-item label { font-size: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🎓 Simulasi Nilai Gabungan SPMB</h1>
+  <h2>SMP Negeri Kota Yogyakarta</h2>
+
+  <!-- Toggle Tahun Kelulusan -->
+  <div class="year-toggle">
+    <strong>Tahun Kelulusan:</strong><br>
+    <label><input type="radio" name="tahun" value="2026" checked> 2026 <span class="badge">TKA+TKAD</span></label>
+    <label><input type="radio" name="tahun" value="2025"> 2025 <span class="badge">ASPD</span></label>
+  </div>
+
+  <div class="formula-box" id="formula-info">
+    📐 <strong>Rumus 2026:</strong><br>
+    NG = ((TKA + TKAD) × 90%) + (Jml.Rerata Rapor × 0,6 × 10%) + Prestasi
+  </div>
+
+  <form id="form">
+    
+    <!-- === KOMPONEN AKADEMIK (TES) === -->
+    <div class="section">
+      <h3 class="section-label">📝 Nilai Tes Akademik</h3>
+      <div id="akademik-inputs"></div>
+      <span class="helper-text" id="akademik-hint"></span>
+      <span class="required-hint" id="akademik-required">⚠️ Semua field tes akademik wajib diisi</span>
+    </div>
+
+    <!-- === NILAI RAPOR DETAIL PER SEMESTER === -->
+    <div class="section">
+      <h3 class="section-label">📚 Nilai Rapor (5 Semester Terakhir)</h3>
+      <p style="font-size:13px;color:#666;margin:0 0 1rem 0">
+        Isi nilai pengetahuan Semester 7-11 (Kls 4 SMT1 s.d. Kls 6 SMT1). 
+        <strong>Wajib diisi | Maksimal: 100 per input</strong>
+      </p>
+      <div id="rapor-inputs"></div>
+      <span class="required-hint" id="rapor-required">⚠️ Semua field rapor wajib diisi</span>
+    </div>
+
+    <!-- === PRESTASI === -->
+    <div class="section">
+      <h3 class="section-label">🏆 Prestasi Non-Akademik (Opsional)</h3>
+      <label>Nilai Prestasi (0-100):</label>
+      <input type="number" id="nilai_prestasi" min="0" max="100" placeholder="Kosongkan jika tidak ada" value="">
+      <span class="helper-text">Hanya untuk sertifikat yang telah diverifikasi Dinas Pendidikan</span>
+      <span class="max-hint">Maks: 100</span>
+    </div>
+
+    <button type="button" onclick="handleUserClick(); hitungNG()">🎯 Hitung Nilai Gabungan</button>
+    
+    <div class="result" id="hasil_ng">
+      <em>Nilai Gabungan akan muncul di sini setelah dihitung.</em>
+    </div>
+
+    <!-- === SHARE & COPY SECTION === -->
+    <div class="share-section">
+      <h3>📤 Bagikan Hasil</h3>
+      <div class="share-buttons">
+        <button type="button" class="share-btn" onclick="shareToWhatsApp('withValues')">
+          <span class="share-icon">📊</span>
+          <span>Share ke WhatsApp (dengan nilai)</span>
+        </button>
+        <button type="button" class="share-btn secondary" onclick="shareToWhatsApp('withoutValues')">
+          <span class="share-icon">🔗</span>
+          <span>Share Link Kosong</span>
+        </button>
+        <button type="button" class="copy-btn" id="copyBtn" onclick="copyShortLink()">
+          <span class="share-icon">📋</span>
+          <span id="copyText">Salin Link Pendek</span>
+        </button>
+      </div>
+      <div class="short-url-display" id="shortUrlDisplay"></div>
+      <div class="share-hint">
+        💡 Link pendek otomatis dibuat setelah menghitung<br>
+        Klik "Salin Link Pendek" untuk berbagi via chat/email
+      </div>
+    </div>
+  </form>
+
+  <br>
+  <button type="button" class="secondary" onclick="resetForm()">🔄 Reset Semua Nilai</button>
+  <a href="https://wa.me/62895366322211?text=Halo%20saya%20mau%20tanya%20soal%20SPMB" target="_blank" style="display:block;margin-top:0.5rem">
+    <button type="button" class="secondary">💬 Tanya via WhatsApp</button>
+  </a>
+
+<script src="2026wa64.js"></script>
+
+  <!-- Footer Kontak -->
+  <div style="margin-top: 2em; padding: 1em; background-color: #e6f4ea; border-top: 2px solid #a0c9a5; border-radius: 10px;">
+    <h3 style="margin-top:0">📞 Kontak & Layanan Informasi</h3>
+    <p style="margin:0.3rem 0"><strong>Email:</strong> <a href="mailto:dindikpora@jogjakota.go.id">dindikpora@jogjakota.go.id</a></p>
+    <p style="margin:0.3rem 0"><strong>Hotline WA:</strong> <a href="https://wa.me/62895366322211" target="_blank">0895 3663 2211</a></p>
+    <p style="margin:0.3rem 0"><strong>Telp SPMB:</strong> (0274) 563030</p>
+    <p style="margin:0.3rem 0"><strong>Aduan:</strong> <a href="mailto:upik@jogjakota.go.id">upik@jogjakota.go.id</a></p>
+    <p style="margin:0.3rem 0"><strong>Website:</strong> <a href="https://dindikpora.jogjakota.go.id" target="_blank">dindikpora.jogjakota.go.id</a></p>
+    <br>
+    <strong>⏰ Waktu Layanan:</strong>
+    <ul style="margin:0.3rem 0 0 1rem; padding:0">
+      <li>Senin - Kamis: 08.00 - 15.00 WIB</li>
+      <li>Jumat: 08.00 - 14.00 WIB</li>
+    </ul>
+  </div>
+
+</body>
+</html>
