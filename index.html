@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23007bff%22/><text y=%22.9em%22 x=%2250%25%22 font-family=%22Arial%22 font-weight=%22bold%22 font-size=%2250%22 text-anchor=%22middle%22 fill=%22white%22>TKA</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23007bff%22/><text y=%22.9em%22 x=%2250%25%22 font-family=%22Arial%22 font-weight=%22bold%22 font-size=%2250%22 text-anchor=%22middle%22 fill=%22white%22>TKA</text></svg>">
   <title>Kalkulator SPMB SMPN 2026 - Kota Yogyakarta</title>
   <style>
     * { box-sizing: border-box; }
@@ -207,6 +207,71 @@
     }
     button.secondary:hover { background-color: #ccc; }
     
+    /* Share & Copy Section */
+    .share-section {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+      border-radius: 10px;
+      color: white;
+      box-shadow: 0 4px 6px rgba(37, 211, 102, 0.3);
+    }
+    .share-section h3 { color: white; margin-top: 0; font-size: 1.1rem; }
+    .share-buttons { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.75rem; }
+    
+    .share-btn, .copy-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 12px;
+      border: 2px solid white;
+      background: white;
+      color: #25D366;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 16px;
+      text-decoration: none;
+      width: 100%;
+    }
+    .share-btn:hover, .copy-btn:hover {
+      background: #f0fff4;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    .share-btn.secondary {
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border-color: rgba(255,255,255,0.5);
+    }
+    .share-btn.secondary:hover { background: rgba(255,255,255,0.3); }
+    .copy-btn {
+      background: #17a2b8;
+      color: white;
+      border-color: #138496;
+    }
+    .copy-btn:hover { background: #138496; }
+    .copy-btn.copied {
+      background: #28a745;
+      border-color: #218838;
+    }
+    
+    .share-icon { font-size: 20px; }
+    .share-hint { font-size: 12px; text-align: center; margin-top: 0.5rem; opacity: 0.9; }
+    
+    .short-url-display {
+      margin-top: 0.75rem;
+      padding: 0.5rem;
+      background: rgba(255,255,255,0.15);
+      border-radius: 6px;
+      font-size: 11px;
+      word-break: break-all;
+      display: none;
+    }
+    .short-url-display.show { display: block; }
+    
     .flash { animation: flashHighlight 1s ease-in-out; }
     @keyframes flashHighlight {
       0% { background-color: #fff3cd; }
@@ -215,19 +280,8 @@
     }
     
     .hidden { display: none; }
-    
-    .helper-text {
-      font-size: 12px;
-      color: #666;
-      margin-top: 0.25rem;
-      display: block;
-    }
-    .required-hint {
-      font-size: 11px;
-      color: #dc3545;
-      margin-top: 0.2rem;
-      display: none;
-    }
+    .helper-text { font-size: 12px; color: #666; margin-top: 0.25rem; display: block; }
+    .required-hint { font-size: 11px; color: #dc3545; margin-top: 0.2rem; display: none; }
     .required-hint.show { display: block; }
     
     .toast {
@@ -248,12 +302,7 @@
     @keyframes slideDown { from { top: -50px; opacity: 0; } to { top: 20px; opacity: 1; } }
     @keyframes slideUp { from { top: 20px; opacity: 1; } to { top: -50px; opacity: 0; } }
     
-    .max-hint {
-      font-size: 11px;
-      color: #999;
-      text-align: right;
-      margin-top: 0.2rem;
-    }
+    .max-hint { font-size: 11px; color: #999; text-align: right; margin-top: 0.2rem; }
     
     @media (max-width: 400px) {
       .semester-grid { grid-template-columns: repeat(5, 1fr); gap: 0.3rem; }
@@ -314,6 +363,30 @@
     <div class="result" id="hasil_ng">
       <em>Nilai Gabungan akan muncul di sini setelah dihitung.</em>
     </div>
+
+    <!-- === SHARE & COPY SECTION === -->
+    <div class="share-section">
+      <h3>📤 Bagikan Hasil</h3>
+      <div class="share-buttons">
+        <button type="button" class="share-btn" onclick="shareToWhatsApp('withValues')">
+          <span class="share-icon">📊</span>
+          <span>Share ke WhatsApp (dengan nilai)</span>
+        </button>
+        <button type="button" class="share-btn secondary" onclick="shareToWhatsApp('withoutValues')">
+          <span class="share-icon">🔗</span>
+          <span>Share Link Kosong</span>
+        </button>
+        <button type="button" class="copy-btn" id="copyBtn" onclick="copyShortLink()">
+          <span class="share-icon">📋</span>
+          <span id="copyText">Salin Link Pendek</span>
+        </button>
+      </div>
+      <div class="short-url-display" id="shortUrlDisplay"></div>
+      <div class="share-hint">
+        💡 Link pendek otomatis dibuat setelah menghitung<br>
+        Klik "Salin Link Pendek" untuk berbagi via chat/email
+      </div>
+    </div>
   </form>
 
   <br>
@@ -322,7 +395,7 @@
     <button type="button" class="secondary">💬 Tanya via WhatsApp</button>
   </a>
 
- <script src="jsobfuscator.js"></script>
+<script src="2026wa64codebeautifyorg.js"></script>
 
   <!-- Footer Kontak -->
   <div style="margin-top: 2em; padding: 1em; background-color: #e6f4ea; border-top: 2px solid #a0c9a5; border-radius: 10px;">
