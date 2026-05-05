@@ -382,40 +382,58 @@
 
   <script>
     // ================= KONFIGURASI GLOBAL =================
-    const CONFIG = {
-      BOBOT_AKADEMIK: 0.9,
-      BOBOT_RAPOR: 0.1,
-      KOEF_RAPOR: 0.6,
-      MAX_NILAI_INPUT: 100,
-      CLICK_THRESHOLD: 4,
-      AFFILIATE_URL: "https://s.shopee.co.id/AA4ETmAQ4H",
-      SEMESTERS: [7, 8, 9, 10, 11],
-      MAPEL_RAPOR: [
-        { id: 'agama', label: 'Pendidikan Agama dan Budi Pekerti' },
-        { id: 'pancasila', label: 'Pendidikan Pancasila' },
-        { id: 'indo', label: 'Bahasa Indonesia' },
-        { id: 'mtk', label: 'Matematika' },
-        { id: 'ipas', label: 'Ilmu Pengetahuan Alam dan Sosial (IPAS)' }
-      ],
-      // Urutan packing: [tahun, akademik..., rapor..., prestasi]
-      PACK_ORDER: {
-        '2025': ['tahun', 'aspd_mtk', 'aspd_indo', 'aspd_ipa', ...CONFIG.MAPEL_RAPOR.flatMap(m => CONFIG.SEMESTERS.map(s => `rapor_${m.id}_${s}`)), 'prestasi'],
-        '2026': ['tahun', 'tka_mtk', 'tka_indo', 'tkad_ipas', ...CONFIG.MAPEL_RAPOR.flatMap(m => CONFIG.SEMESTERS.map(s => `rapor_${m.id}_${s}`)), 'prestasi']
-      }
-    };
+// ================= KONFIGURASI GLOBAL (FIXED) =================
 
-    const AKADEMIK_CONFIG = {
-      '2026': [
-        { id: 'tka_mtk', label: 'TKA Matematika', placeholder: '0-100', max: 100, hint: 'Nilai TKA untuk Matematika' },
-        { id: 'tka_indo', label: 'TKA Bahasa Indonesia', placeholder: '0-100', max: 100, hint: 'Nilai TKA untuk Bahasa Indonesia' },
-        { id: 'tkad_ipas', label: 'TKAD IPAS', placeholder: '0-100', max: 100, hint: 'Nilai TKAD untuk IPAS' }
-      ],
-      '2025': [
-        { id: 'aspd_mtk', label: 'ASPD Matematika', placeholder: '0-100', max: 100, hint: 'Nilai ASPD untuk Matematika' },
-        { id: 'aspd_indo', label: 'ASPD Bahasa Indonesia', placeholder: '0-100', max: 100, hint: 'Nilai ASPD untuk Bahasa Indonesia' },
-        { id: 'aspd_ipa', label: 'ASPD IPA/S', placeholder: '0-100', max: 100, hint: 'Nilai ASPD untuk IPA atau IPAS' }
-      ]
-    };
+// 1. CONFIG dasar - TANPA self-reference
+const CONFIG = {
+  BOBOT_AKADEMIK: 0.9,
+  BOBOT_RAPOR: 0.1,
+  KOEF_RAPOR: 0.6,
+  MAX_NILAI_INPUT: 100,
+  CLICK_THRESHOLD: 4,
+  AFFILIATE_URL: "https://s.shopee.co.id/AA4ETmAQ4H",
+  SEMESTERS: [7, 8, 9, 10, 11],
+  MAPEL_RAPOR: [
+    { id: 'agama', label: 'Pendidikan Agama dan Budi Pekerti' },
+    { id: 'pancasila', label: 'Pendidikan Pancasila' },
+    { id: 'indo', label: 'Bahasa Indonesia' },
+    { id: 'mtk', label: 'Matematika' },
+    { id: 'ipas', label: 'Ilmu Pengetahuan Alam dan Sosial (IPAS)' }
+  ]
+};
+
+// 2. PACK_ORDER - dibuat SETELAH CONFIG selesai
+const PACK_ORDER = {
+  '2025': [
+    'tahun',
+    'aspd_mtk', 'aspd_indo', 'aspd_ipa',
+    ...CONFIG.MAPEL_RAPOR.flatMap(m => CONFIG.SEMESTERS.map(s => `rapor_${m.id}_${s}`)),
+    'prestasi'
+  ],
+  '2026': [
+    'tahun',
+    'tka_mtk', 'tka_indo', 'tkad_ipas',
+    ...CONFIG.MAPEL_RAPOR.flatMap(m => CONFIG.SEMESTERS.map(s => `rapor_${m.id}_${s}`)),
+    'prestasi'
+  ]
+};
+
+// 3. Attach ke CONFIG untuk konsistensi akses
+CONFIG.PACK_ORDER = PACK_ORDER;
+
+// 4. AKADEMIK_CONFIG (tidak berubah)
+const AKADEMIK_CONFIG = {
+  '2026': [
+    { id: 'tka_mtk', label: 'TKA Matematika', placeholder: '0-100', max: 100, hint: 'Nilai TKA untuk Matematika' },
+    { id: 'tka_indo', label: 'TKA Bahasa Indonesia', placeholder: '0-100', max: 100, hint: 'Nilai TKA untuk Bahasa Indonesia' },
+    { id: 'tkad_ipas', label: 'TKAD IPAS', placeholder: '0-100', max: 100, hint: 'Nilai TKAD untuk IPAS' }
+  ],
+  '2025': [
+    { id: 'aspd_mtk', label: 'ASPD Matematika', placeholder: '0-100', max: 100, hint: 'Nilai ASPD untuk Matematika' },
+    { id: 'aspd_indo', label: 'ASPD Bahasa Indonesia', placeholder: '0-100', max: 100, hint: 'Nilai ASPD untuk Bahasa Indonesia' },
+    { id: 'aspd_ipa', label: 'ASPD IPA/S', placeholder: '0-100', max: 100, hint: 'Nilai ASPD untuk IPA atau IPAS' }
+  ]
+};
 
     // State
     let clickCount = 0;
