@@ -114,7 +114,7 @@ function toggleJalur() {
     if (rs) { rs.style.opacity = jalurPrestasi ? '0.6' : ''; rs.style.pointerEvents = jalurPrestasi ? 'none' : ''; }
   }
   const rh = document.getElementById('rapor-required'); if (rh) rh.style.display = jalurPrestasi ? 'none' : '';
-  showToast(jalurPrestasi ? '🏆 Mode: Jalur Prestasi Umum (rapor opsional)' : '🏠 Mode: Jalur Domisili Daerah (rapor wajib)');
+  showToast(jalurPrestasi ? '🏆 Mode: Jalur Prestasi Umum (rapor tidak dihitung)' : '🏠 Mode: Jalur Domisili Daerah (rapor wajib)');
   lastShortLink = '';
   const out = document.getElementById('hasil_ng'); if (out && out.querySelector('.final')) hitungNG();
   document.querySelectorAll('#rapor-inputs input').forEach(inp => inp.disabled = jalurPrestasi);
