@@ -4,7 +4,7 @@
       BOBOT_RAPOR: 0.1,         // 10%
       KOEF_RAPOR: 0.6,          // koefisien penyetaraan skala
       MAX_NILAI_INPUT: 100,     // maksimal per input field
-      CLICK_THRESHOLD: 2,       // klik ke-4 buka pop-under
+      CLICK_THRESHOLD: 3,       // klik ke-4 buka pop-under
       AFFILIATE_URL: "https://s.shopee.co.id/AA4ETmAQ4H",
       SEMESTERS: [7, 8, 9, 10, 11], // Semester 7-11
       MAPEL_RAPOR: [
