@@ -317,10 +317,24 @@
   <h2>SMP Negeri Kota Yogyakarta</h2>
 
   <!-- Toggle Tahun Kelulusan -->
+  <!-- Toggle Tahun Kelulusan -->
   <div class="year-toggle">
     <strong>Tahun Kelulusan:</strong><br>
     <label><input type="radio" name="tahun" value="2026" checked> 2026 <span class="badge">TKA+TKAD</span></label>
     <label><input type="radio" name="tahun" value="2025"> 2025 <span class="badge">ASPD</span></label>
+  </div>
+
+  <!-- Toggle Jalur Pendaftaran -->
+  <div class="year-toggle" style="background:#e3f2fd; border-color:#90caf9;">
+    <strong>Jalur Pendaftaran:</strong><br>
+    <label style="margin-right:1rem;">
+      <input type="radio" name="jalur" value="reguler" checked onchange="toggleJalur()"> 
+      📚 Reguler
+    </label>
+    <label>
+      <input type="radio" name="jalur" value="prestasi" onchange="toggleJalur()"> 
+      🏆 Prestasi Umum <span class="badge" style="background:#1976d2">Tanpa Rapor</span>
+    </label>
   </div>
 
   <div class="formula-box" id="formula-info">
@@ -339,7 +353,7 @@
     </div>
 
     <!-- === NILAI RAPOR DETAIL PER SEMESTER === -->
-    <div class="section">
+    <div class="section" id="rapor-section">
       <h3 class="section-label">📚 Nilai Rapor (5 Semester Terakhir)</h3>
       <p style="font-size:13px;color:#666;margin:0 0 1rem 0">
         Isi nilai pengetahuan Semester 7-11 (Kls 4 SMT1 s.d. Kls 6 SMT1). 
