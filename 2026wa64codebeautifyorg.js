@@ -4,6 +4,8 @@ const CONFIG = {
   BOBOT_RAPOR: 0.1,
   KOEF_RAPOR: 0.6,
   MAX_NILAI_INPUT: 100,
+  MAX_PRESTASI_DOMISILI: 10,   // Maks prestasi jalur domisili
+  MAX_PRESTASI_PRESTASI: 7.5,  // Maks prestasi jalur prestasi umum (POS 2026)
   CLICK_THRESHOLD: 3,
   AFFILIATE_URL: "https://s.shopee.co.id/AA4ETmAQ4H",
   SEMESTERS: [7, 8, 9, 10, 11],
@@ -16,10 +18,26 @@ const CONFIG = {
   ]
 };
 
-// Jalur Configuration - DOMISILI DAERAH & PRESTASI UMUM
+// Jalur Configuration - DOMISILI DAERAH & PRESTASI UMUM (POS 2026)
 const FORMULA = {
-  domisili: { label: 'Jalur Domisili Daerah', desc: 'NG = (Tes × 90%) + (Rapor × 6%) + Prestasi', includeRapor: true },
-  prestasi: { label: 'Jalur Prestasi Umum', desc: 'NG = (Tes × 90%) + Prestasi (tanpa rapor)', includeRapor: false }
+  domisili: { 
+    label: 'Jalur Domisili Daerah', 
+    desc: 'NG = (Tes × 90%) + (Rapor × 6%) + Prestasi', 
+    includeRapor: true,
+    maxAkademik: 300,
+    maxRapor: 500,
+    maxPrestasi: 10,
+    calc: (tes, rapor, prestasi) => (tes * 0.9) + (rapor * 0.6 * 0.1) + prestasi
+  },
+  prestasi: { 
+    label: 'Jalur Prestasi Umum', 
+    desc: 'NG = Total Tes + Prestasi (tanpa rapor, tanpa bobot)', 
+    includeRapor: false,
+    maxAkademik: 300,
+    maxRapor: 0,
+    maxPrestasi: 7.5,
+    calc: (tes, rapor, prestasi) => tes + prestasi // ⚠️ Tanpa bobot!
+  }
 };
 
 const AKADEMIK_CONFIG = {
@@ -106,15 +124,15 @@ function toggleJalur() {
   jalurPrestasi = document.querySelector('input[name="jalur"]:checked')?.value === 'prestasi';
   const el = document.getElementById('formula-info');
   if (el) {
-    const bf = currentYear === '2026' ? '((TKA MTK + TKA B.Indo + TKAD) × 90%)' : '((ASPD MTK + ASPD B.Indo + ASPD IPA) × 90%)';
+    const bf = currentYear === '2026' ? '(TKA MTK + TKA B.Indo + TKAD)' : '(ASPD MTK + ASPD B.Indo + ASPD IPA)';
     el.innerHTML = jalurPrestasi 
-      ? `📐 <strong>${FORMULA.prestasi.label}:</strong><br>NG = ${bf} + Prestasi<br><small style="color:#666">⚠️ Nilai rapor tidak dihitung untuk jalur ini</small>`
-      : `📐 <strong>${FORMULA.domisili.label}:</strong><br>NG = ${bf} + (Jml.Rerata Rapor × 0,6 × 10%) + Prestasi`;
+      ? `📐 <strong>${FORMULA.prestasi.label}:</strong><br>NG = ${bf} + Prestasi<br><small style="color:#666">⚠️ Tanpa bobot, tanpa rapor (POS 2026)</small>`
+      : `📐 <strong>${FORMULA.domisili.label}:</strong><br>NG = (${bf} × 90%) + (Jml.Rerata Rapor × 6%) + Prestasi`;
     const rs = document.getElementById('rapor-section');
     if (rs) { rs.style.opacity = jalurPrestasi ? '0.6' : ''; rs.style.pointerEvents = jalurPrestasi ? 'none' : ''; }
   }
   const rh = document.getElementById('rapor-required'); if (rh) rh.style.display = jalurPrestasi ? 'none' : '';
-  showToast(jalurPrestasi ? '🏆 Mode: Jalur Prestasi Umum (rapor tidak dihitung)' : '🏠 Mode: Jalur Domisili Daerah (rapor wajib)');
+  showToast(jalurPrestasi ? '🏆 Mode: Jalur Prestasi Umum (rapor tidak digunakan)' : '🏠 Mode: Jalur Domisili Daerah (rapor wajib)');
   lastShortLink = '';
   const out = document.getElementById('hasil_ng'); if (out && out.querySelector('.final')) hitungNG();
   document.querySelectorAll('#rapor-inputs input').forEach(inp => inp.disabled = jalurPrestasi);
@@ -179,10 +197,10 @@ function updateSubjectAverage(mid) {
 // ================= TOGGLE TAHUN =================
 function updateFormulaInfo() {
   const el = document.getElementById('formula-info'); if (!el) return;
-  const bf = currentYear === '2026' ? '((TKA MTK + TKA B.Indo + TKAD) × 90%)' : '((ASPD MTK + ASPD B.Indo + ASPD IPA) × 90%)';
+  const bf = currentYear === '2026' ? '(TKA MTK + TKA B.Indo + TKAD)' : '(ASPD MTK + ASPD B.Indo + ASPD IPA)';
   el.innerHTML = jalurPrestasi 
-    ? `📐 <strong>${FORMULA.prestasi.label}:</strong><br>NG = ${bf} + Prestasi<br><small style="color:#666">⚠️ Nilai rapor tidak dihitung</small>`
-    : `📐 <strong>${FORMULA.domisili.label}:</strong><br>NG = ${bf} + (Jml.Rerata Rapor × 0,6 × 10%) + Prestasi`;
+    ? `📐 <strong>${FORMULA.prestasi.label}:</strong><br>NG = ${bf} + Prestasi<br><small style="color:#666">⚠️ Tanpa bobot, tanpa rapor</small>`
+    : `📐 <strong>${FORMULA.domisili.label}:</strong><br>NG = (${bf} × 90%) + (Jml.Rerata Rapor × 6%) + Prestasi`;
 }
 
 function toggleForm() {
@@ -241,7 +259,7 @@ function shareToWhatsApp(mode) {
     } else { msg = `🎓 *Simulasi Nilai Gabungan SPMB ${currentYear}*\n*Jalur: ${jalurPrestasi ? '🏆 Prestasi Umum' : '🏠 Domisili Daerah'}*\n\nSaya mengisi kalkulator SPMB Kota Yogyakarta. Cek hasilnya!\n\n🔗 Link dengan nilai saya:\n${url}\n\nSilakan coba hitung sendiri!`; }
   } else {
     const base = window.location.origin + window.location.pathname;
-    msg = `🎓 *Kalkulator Nilai Gabungan SPMB ${currentYear}*\n\nIngin tahu berapa Nilai Gabungan kamu untuk pendaftaran SMP Negeri Kota Yogyakarta?\n\nMendukung 2 jalur:\n✅ Jalur Domisili Daerah (Tes + Rapor + Prestasi)\n✅ Jalur Prestasi Umum (Tes + Prestasi saja)\n\n🔗 Link kalkulator:\n${base}\n\nGratis dan mudah digunakan! 💚`;
+    msg = `🎓 *Kalkulator Nilai Gabungan SPMB ${currentYear}*\n\nIngin tahu berapa Nilai Gabungan kamu untuk pendaftaran SMP Negeri Kota Yogyakarta?\n\nMendukung 2 jalur:\n✅ Jalur Domisili Daerah (Tes + Rapor + Prestasi)\n✅ Jalur Prestasi Umum (Tes + Prestasi saja, tanpa bobot)\n\n🔗 Link kalkulator:\n${base}\n\nGratis dan mudah digunakan! 💚`;
   }
   window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
   showToast(mode === 'withValues' ? '📤 Membuka WhatsApp dengan nilai...' : '📤 Membuka WhatsApp...');
@@ -250,12 +268,24 @@ function shareToWhatsApp(mode) {
 // ================= FUNGSI HITUNG UTAMA =================
 function hitungNG() {
   let err = false, efields = [];
+  
+  // Validasi akademik (wajib untuk semua jalur)
   AKADEMIK_CONFIG[currentYear].forEach(f => {
     if (isFieldEmpty(f.id)) { markFieldRequired(f.id, true); efields.push(f.label); err = true; }
-    else { markFieldRequired(f.id, false); const v = parseFloat(document.getElementById(f.id).value); if (v > CONFIG.MAX_NILAI_INPUT) { document.getElementById(f.id).classList.add('error'); setTimeout(() => document.getElementById(f.id).classList.remove('error'), 500); showToast(`${f.label} tidak boleh lebih dari ${CONFIG.MAX_NILAI_INPUT}`); err = true; } }
+    else { 
+      markFieldRequired(f.id, false); 
+      const v = parseFloat(document.getElementById(f.id).value); 
+      if (v > CONFIG.MAX_NILAI_INPUT) { 
+        document.getElementById(f.id).classList.add('error'); 
+        setTimeout(() => document.getElementById(f.id).classList.remove('error'), 500); 
+        showToast(`${f.label} tidak boleh lebih dari ${CONFIG.MAX_NILAI_INPUT}`); 
+        err = true; 
+      } 
+    }
   });
   if (efields.length > 0) showRequiredHint('akademik-required', true);
   
+  // Validasi rapor HANYA untuk jalur domisili
   const rempty = [];
   if (!jalurPrestasi) {
     CONFIG.MAPEL_RAPOR.forEach(m => CONFIG.SEMESTERS.forEach(s => {
@@ -273,16 +303,43 @@ function hitungNG() {
   }
   showRequiredHint('akademik-required', false); showRequiredHint('rapor-required', false);
 
+  // Hitung rapor HANYA untuk jalur domisili
   let jrr = 0, dr = '';
-  if (!jalurPrestasi) CONFIG.MAPEL_RAPOR.forEach(m => { const a = updateSubjectAverage(m.id); if (a !== null) { jrr += a; dr += `📊 ${m.label.split(' (')[0]}: <strong>${a.toFixed(2)}</strong><br>`; } });
+  if (!jalurPrestasi) {
+    CONFIG.MAPEL_RAPOR.forEach(m => { 
+      const a = updateSubjectAverage(m.id); 
+      if (a !== null) { jrr += a; dr += `📊 ${m.label.split(' (')[0]}: <strong>${a.toFixed(2)}</strong><br>`; } 
+    });
+  }
 
+  // Hitung total tes akademik
   let tta = 0, la = '', da = '';
-  if (currentYear === '2026') { const tm = getValue('tka_mtk'), ti = getValue('tka_indo'), tp = getValue('tkad_ipas'); tta = tm + ti + tp; la = 'TKA + TKAD'; da = `🎓 TKA MTK: ${tm} | TKA B.Indo: ${ti} | TKAD IPAS: ${tp}`; }
-  else { const am = getValue('aspd_mtk'), ai = getValue('aspd_indo'), ap = getValue('aspd_ipa'); tta = am + ai + ap; la = 'ASPD'; da = `🎓 ASPD MTK: ${am} | ASPD B.Indo: ${ai} | ASPD IPA/S: ${ap}`; }
+  if (currentYear === '2026') { 
+    const tm = getValue('tka_mtk'), ti = getValue('tka_indo'), tp = getValue('tkad_ipas'); 
+    tta = tm + ti + tp; 
+    la = 'TKA + TKAD'; 
+    da = `🎓 TKA MTK: ${tm} | TKA B.Indo: ${ti} | TKAD IPAS: ${tp}`; 
+  } else { 
+    const am = getValue('aspd_mtk'), ai = getValue('aspd_indo'), ap = getValue('aspd_ipa'); 
+    tta = am + ai + ap; 
+    la = 'ASPD'; 
+    da = `🎓 ASPD MTK: ${am} | ASPD B.Indo: ${ai} | ASPD IPA/S: ${ap}`; 
+  }
 
-  const np = getValue('nilai_prestasi') || 0, ka = tta * CONFIG.BOBOT_AKADEMIK, kr = !jalurPrestasi ? (jrr * CONFIG.KOEF_RAPOR) * CONFIG.BOBOT_RAPOR : 0, ng = ka + kr + np;
+  // Nilai prestasi (dengan validasi max per jalur)
+  let np = getValue('nilai_prestasi') || 0;
+  const maxPrestasi = jalurPrestasi ? CONFIG.MAX_PRESTASI_PRESTASI : CONFIG.MAX_PRESTASI_DOMISILI;
+  if (np > maxPrestasi) {
+    np = maxPrestasi;
+    showToast(`⚠️ Nilai prestasi dibatasi maksimal ${maxPrestasi} untuk jalur ini`);
+  }
 
-  const output = `<strong>🎓 Jalur: ${jalurPrestasi ? '🏆 Prestasi Umum' : '🏠 Domisili Daerah'}</strong> | <strong>Tahun: ${currentYear}</strong><br><br>${!jalurPrestasi ? `📚 <strong>Rata-rata Rapor per Mapel (5 Semester):</strong><br>${dr}➕ <strong>Jumlah Rerata Rapor:</strong> ${jrr.toFixed(2)} <small style="color:#666">(maks: ${CONFIG.MAPEL_RAPOR.length * CONFIG.MAX_NILAI_INPUT})</small><br><br>` : `<span style="color:#666">📚 <em>Nilai rapor tidak dihitung untuk Jalur Prestasi Umum</em></span><br><br>`}${da}<br>🎓 <strong>Total ${la}:</strong> ${tta.toFixed(2)}<br>🏆 Komponen Akademik (×90%): <strong>${ka.toFixed(2)}</strong><br>${!jalurPrestasi ? `📖 Komponen Rapor (×6%): <strong>${kr.toFixed(2)}</strong><br>` : ''}🎖️ Nilai Prestasi: <strong>${np}</strong><br><br><span class="final">🎯 NILAI GABUNGAN: ${ng.toFixed(2)}</span><br><small style="color:#666">💡 ${jalurPrestasi ? 'Jalur Prestasi: Maksimal = 300×0.9 + 100 = 370.00' : 'Jalur Domisili: Maksimal = 300×0.9 + 500×0.06 = 300.00'}</small>`;
+  // ⚠️ HITUNG NG MENGGUNAKAN RUMUS SESUAI JALUR (POS 2026)
+  const formula = jalurPrestasi ? FORMULA.prestasi : FORMULA.domisili;
+  const nilaiGabunganAkhir = formula.calc(tta, jrr, np);
+
+  // Output dengan info jalur yang benar
+  const output = `<strong>🎓 Jalur: ${jalurPrestasi ? '🏆 Prestasi Umum' : '🏠 Domisili Daerah'}</strong> | <strong>Tahun: ${currentYear}</strong><br><br>${!jalurPrestasi ? `📚 <strong>Rata-rata Rapor per Mapel (5 Semester):</strong><br>${dr}➕ <strong>Jumlah Rerata Rapor:</strong> ${jrr.toFixed(2)} <small style="color:#666">(maks: ${CONFIG.MAPEL_RAPOR.length * CONFIG.MAX_NILAI_INPUT})</small><br><br>` : `<span style="color:#666">📚 <em>Nilai rapor tidak digunakan untuk Jalur Prestasi Umum</em></span><br><br>`}${da}<br>🎓 <strong>Total ${la}:</strong> ${tta.toFixed(2)}<br>🏆 Komponen Akademik: <strong>${jalurPrestasi ? tta.toFixed(2) + ' (tanpa bobot)' : (tta * 0.9).toFixed(2) + ' (×90%)'}</strong><br>${!jalurPrestasi ? `📖 Komponen Rapor (×6%): <strong>${(jrr * 0.6 * 0.1).toFixed(2)}</strong><br>` : ''}🎖️ Nilai Prestasi: <strong>${np}</strong><br><br><span class="final">🎯 NILAI GABUNGAN: ${nilaiGabunganAkhir.toFixed(2)}</span><br><small style="color:#666">💡 ${jalurPrestasi ? 'Prestasi Umum: Maksimal = 300 + 7.5 = 307.50' : 'Domisili: Maksimal = 300×0.9 + 500×0.06 + 10 = 310.00'}</small>`;
 
   const ob = document.getElementById('hasil_ng'); ob.innerHTML = output; ob.classList.remove('flash'); void ob.offsetWidth; ob.classList.add('flash');
   saveInputs(); lastShortLink = ''; showToast('✅ Perhitungan selesai!');
